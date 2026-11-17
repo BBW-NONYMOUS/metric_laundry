@@ -1,0 +1,17 @@
+/target/
+*.class
+*.log
+
+# Local IDE settings
+/.idea/
+*.iml
+/nbproject/private/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Operating system files
+.DS_Store
+Thumbs.db

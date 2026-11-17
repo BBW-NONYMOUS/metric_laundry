@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.3" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0" />
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false" />
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true" />
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false" />
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1" />
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0" />
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false" />
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2" />
+  </AuxValues>
+  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout">
+    <Property name="horizontalGap" type="int" value="0" />
+    <Property name="verticalGap" type="int" value="16" />
+  </Layout>
+  <SubComponents>
+    <Container class="javax.swing.JPanel" name="stats">
+      <Properties>
+        <Property name="opaque" type="boolean" value="false" />
+      </Properties>
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridLayout">
+        <Property name="rows" type="int" value="1" />
+        <Property name="columns" type="int" value="4" />
+        <Property name="horizontalGap" type="int" value="14" />
+        <Property name="verticalGap" type="int" value="0" />
+      </Layout>
+      <SubComponents>
+        <Component class="com.metriclaundry.ui.components.StatCard" name="newOrders">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new StatCard(&quot;orders&quot;, &quot;New Orders&quot;, new Color(0x607D8B))" />
+          </AuxValues>
+        </Component>
+        <Component class="com.metriclaundry.ui.components.StatCard" name="inProcess">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new StatCard(&quot;washer&quot;, &quot;In Process&quot;, new Color(0xE0A800))" />
+          </AuxValues>
+        </Component>
+        <Component class="com.metriclaundry.ui.components.StatCard" name="ready">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new StatCard(&quot;bag&quot;, &quot;Ready for Pickup&quot;, new Color(0x1C5DB6))" />
+          </AuxValues>
+        </Component>
+        <Component class="com.metriclaundry.ui.components.StatCard" name="toVerify">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new StatCard(&quot;peso&quot;, &quot;Payments to Verify&quot;, Theme.PRIMARY)" />
+          </AuxValues>
+        </Component>
+      </SubComponents>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+          <BorderConstraints direction="North" />
+        </Constraint>
+      </Constraints>
+    </Container>
+    <Container class="com.metriclaundry.ui.components.RoundedPanel" name="queue">
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout">
+        <Property name="horizontalGap" type="int" value="0" />
+        <Property name="verticalGap" type="int" value="10" />
+      </Layout>
+      <SubComponents>
+        <Container class="javax.swing.JPanel" name="head">
+          <Properties>
+            <Property name="opaque" type="boolean" value="false" />
+          </Properties>
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" />
+          <SubComponents>
+            <Component class="javax.swing.JLabel" name="t">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Work Queue" />
+                <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                  <Font name="SansSerif" size="16" style="1" />
+                </Property>
+                <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                  <Color blue="1f" green="2b" red="1c" type="rgb" />
+                </Property>
+                <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="Icons.of(&quot;orders&quot;, 18, Theme.PRIMARY_DARK)" type="code" />
+                </Property>
+              </Properties>
+              <Constraints>
+                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+                  <BorderConstraints direction="West" />
+                </Constraint>
+              </Constraints>
+            </Component>
+            <Component class="com.metriclaundry.ui.components.AppButton" name="walkIn">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="AppButton.primary(&quot;New Walk-in Order&quot;, &quot;plus&quot;).small()" />
+              </AuxValues>
+              <Properties>
+                <Property name="text" type="java.lang.String" value="New Walk-in Order" />
+              </Properties>
+              <Constraints>
+                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+                  <BorderConstraints direction="East" />
+                </Constraint>
+              </Constraints>
+            </Component>
+          </SubComponents>
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+              <BorderConstraints direction="North" />
+            </Constraint>
+          </Constraints>
+        </Container>
+        <Container class="javax.swing.JScrollPane" name="view1">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="Theme.scroll(null)" />
+          </AuxValues>
+          <SubComponents>
+            <Component class="javax.swing.JTable" name="table">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="Tables.table(model)" />
+              </AuxValues>
+            </Component>
+          </SubComponents>
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+              <BorderConstraints direction="Center" />
+            </Constraint>
+          </Constraints>
+        </Container>
+      </SubComponents>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
+          <BorderConstraints direction="Center" />
+        </Constraint>
+      </Constraints>
+    </Container>
+  </SubComponents>
+</Form>
