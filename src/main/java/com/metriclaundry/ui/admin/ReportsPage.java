@@ -26,7 +26,7 @@ import java.util.List;
 public class ReportsPage extends Page {
     private final ReportDAO dao = new ReportDAO();
 
-    private final DefaultTableModel model = Tables.model("Service", "Orders", "Quantity", "Paid Sales", "Share");
+    private final DefaultTableModel model = Tables.model("Service", "Orders", "Per kg", "Paid Sales", "Share");
 
     private List<Object[]> data = new ArrayList<>();
 
@@ -91,7 +91,7 @@ public class ReportsPage extends Page {
         if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
         try (PrintWriter w = new PrintWriter(fc.getSelectedFile(), StandardCharsets.UTF_8)) {
             w.println("Metric Laundry Sales Report," + value(from) + " to " + value(to));
-            w.println("Service,Unit,Orders,Quantity,Paid Sales");
+            w.println("Service,Unit,Orders,Per kg,Paid Sales");
             for (Object[] r : data)
                 w.println("\"" + r[0] + "\"," + r[1] + "," + r[2] + "," + ((BigDecimal) r[3]).toPlainString() + "," + ((BigDecimal) r[4]).toPlainString());
             Dialogs.info(this, "Report exported to:\n" + fc.getSelectedFile().getAbsolutePath());

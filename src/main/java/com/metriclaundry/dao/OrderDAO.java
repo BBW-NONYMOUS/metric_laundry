@@ -16,11 +16,11 @@ import java.util.List;
 public class OrderDAO {
 
     private static final String SELECT =
-            "SELECT o.*, u.full_name AS customer_name, s.name AS service_name, s.unit AS unit, p.status AS pay_status "
+            "SELECT o.*, u.full_name AS customer_name, s.name AS service_name, s.unit AS unit, COALESCE(p.paid,0) AS paid_amount, COALESCE(p.pending,0) AS pending_amount "
           + "FROM orders o "
           + "JOIN users u ON u.id = o.customer_id "
           + "JOIN services s ON s.id = o.service_id "
-          + "LEFT JOIN payments p ON p.order_id = o.id ";
+          + "LEFT JOIN (SELECT order_id, SUM(CASE WHEN status='PAID' THEN amount ELSE 0 END) paid, SUM(CASE WHEN status='PENDING' THEN amount ELSE 0 END) pending FROM payments GROUP BY order_id) p ON p.order_id = o.id ";
 
     /**
      * Inserts the order and its first history row in ONE transaction and
@@ -112,12 +112,29 @@ public class OrderDAO {
         try (Connection c = Database.getConnection()) {
             c.setAutoCommit(false);
             try (PreparedStatement ps = c.prepareStatement("UPDATE orders SET status = ? WHERE id = ?")) {
+                try (PreparedStatement lock = c.prepareStatement("SELECT total FROM orders WHERE id=? FOR UPDATE")) {
+                    lock.setInt(1,orderId);
+                    try (ResultSet rs=lock.executeQuery()) {
+                        if(!rs.next()) throw new AppException("Order not found.");
+                        java.math.BigDecimal total=rs.getBigDecimal(1);
+                        try(PreparedStatement sums=c.prepareStatement("SELECT COALESCE(SUM(CASE WHEN status='PAID' THEN amount ELSE 0 END),0), COALESCE(SUM(CASE WHEN status='PENDING' THEN amount ELSE 0 END),0) FROM payments WHERE order_id=?")) {
+                            sums.setInt(1,orderId);
+                            try(ResultSet amounts=sums.executeQuery()) {
+                                amounts.next();
+                                if(newStatus==OrderStatus.COMPLETED && amounts.getBigDecimal(1).compareTo(total)<0)
+                                    throw new AppException("The full balance must be paid before completing the order.");
+                                if(newStatus==OrderStatus.CANCELLED && amounts.getBigDecimal(1).add(amounts.getBigDecimal(2)).signum()>0)
+                                    throw new AppException("Cannot cancel an order with confirmed or pending payments. Resolve payments first; refunds require separate handling.");
+                            }
+                        }
+                    }
+                }
                 ps.setString(1, newStatus.name());
                 ps.setInt(2, orderId);
                 ps.executeUpdate();
                 insertHistory(c, orderId, newStatus, changedBy, remarks);
                 c.commit();
-            } catch (SQLException e) {
+            } catch (SQLException | RuntimeException e) {
                 c.rollback();
                 throw e;
             }
@@ -168,8 +185,8 @@ public class OrderDAO {
         Timestamp est = rs.getTimestamp("estimated_completion");
         if (est != null) o.setEstimatedCompletion(est.toLocalDateTime());
         o.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-        String pay = rs.getString("pay_status");
-        if (pay != null) o.setPaymentStatus(PaymentStatus.valueOf(pay));
+        o.setPaidAmount(rs.getBigDecimal("paid_amount"));
+        o.setPendingAmount(rs.getBigDecimal("pending_amount"));
         return o;
     }
 }

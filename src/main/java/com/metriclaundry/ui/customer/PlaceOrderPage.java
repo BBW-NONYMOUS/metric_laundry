@@ -167,7 +167,7 @@ public class PlaceOrderPage extends Page {
         sumTotal = new JLabel();
         form = new RoundedPanel();
         view1 = step("1", "Select a service");
-        view2 = step("2", "Quantity");
+        view2 = step("2", "Per kg");
         q = new JPanel();
         view3 = new JLabel();
         view4 = step("3", "Special instructions (optional)");
@@ -224,7 +224,7 @@ public class PlaceOrderPage extends Page {
         view1.setText("Select a service");
         view1.setFont(Theme.bold(15));
         view1.setForeground(Theme.TEXT);
-        view2.setText("Quantity");
+        view2.setText("Per kg");
         view2.setFont(Theme.bold(15));
         view2.setForeground(Theme.TEXT);
         q.setOpaque(false);
@@ -253,7 +253,7 @@ public class PlaceOrderPage extends Page {
         view7.setForeground(Theme.MUTED);
         view8.setOpaque(false);
         view8.setLayout(new BorderLayout());
-        view9.setText("Quantity");
+        view9.setText("Per kg");
         view9.setFont(Theme.font(Font.PLAIN, 13));
         view9.setForeground(Theme.MUTED);
         view10.setOpaque(false);

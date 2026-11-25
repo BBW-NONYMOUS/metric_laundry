@@ -55,3 +55,17 @@ the application's classes and dependencies on the classpath.
 * **Your real GCash QR:** save it as `gcash_qr.png` next to the jar (or in `src/main/resources/images/`).
 * **Colours and fonts:** `ui/theme/Theme.java`
 * **Shop address and hours:** `ui/customer/AboutPage.java`
+
+## Installment payments and printable history
+
+Existing desktop databases: back up first, then run `database/migrate_partial_payments.sql` once. This preserves existing payment records and allows multiple transactions per order. Do not reimport the fresh-install SQL into a database containing real records: it resets the database.
+
+- In **Manage Orders**, select an order and choose **Transactions / Print** for its full payment and order-status history. Print it or choose **Microsoft Print to PDF** in the system print dialog.
+- **Record Payment** accepts the actual amount received, including a deposit or installment. Customers can submit an amount for staff verification.
+- **Unpaid** means no confirmed payment; **Pending verification** means submitted funds are awaiting verification; **Partially paid** means some confirmed funds have been received; **Paid** means confirmed payments cover the total.
+- The balance is the order total minus confirmed payments. Pending amounts are shown separately and reserve that part of the balance against duplicate submissions.
+- Staff must verify the amount/reference before confirming. Incorrect pending entries can be voided from transaction history, preserving the entry. Confirmed entries cannot be overwritten or voided through this action.
+- Orders with outstanding balances cannot be completed. Orders with confirmed or pending payments cannot be cancelled, including through admin override. Refund processing is not implemented.
+- Receipts show the specific transaction amount and current order totals, paid amount, pending verification and balance. Historical receipts show the current cumulative balance at reprint time.
+
+Regression check: import the seed into a separate database named `metric_laundry_payment_test`, compile tests, then run `com.metriclaundry.PaymentIntegrationCheck` with `-Ddb.url=jdbc:mysql://localhost:3306/metric_laundry_payment_test` and the MySQL driver on the classpath. Never run this check against the working database.

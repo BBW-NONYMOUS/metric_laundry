@@ -78,7 +78,7 @@ public class OrderService {
             if (o.getStatus() != OrderStatus.PLACED)
                 throw new AppException("Your laundry has already been received. Please contact the shop to cancel.");
         }
-        if (o.isPaid()) throw new AppException("This order is already paid. Refunds must be handled by the admin at the counter.");
+        if (o.getPaidAmount().signum() > 0 || o.getPendingAmount().signum() > 0) throw new AppException("This order is already paid. Refunds must be handled by the admin at the counter.");
         orders.updateStatus(orderId, OrderStatus.CANCELLED, actor.getId(),
                 "Cancelled" + (reason == null || reason.isBlank() ? "" : ": " + reason.trim()));
     }

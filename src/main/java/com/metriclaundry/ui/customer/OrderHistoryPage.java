@@ -24,7 +24,7 @@ import java.util.List;
 public class OrderHistoryPage extends Page {
     private final User user;
     private final OrderService orders = new OrderService();
-    private final DefaultTableModel model = Tables.model("Order No.", "Service", "Quantity", "Total", "Status", "Payment", "Date", "Action");
+    private final DefaultTableModel model = Tables.model("Order No.", "Service", "Per kg", "Total", "Status", "Payment", "Date", "Action");
 
     private List<Order> rows = new ArrayList<>();
 

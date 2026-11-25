@@ -135,21 +135,26 @@ public class PaymentPage extends Page {
 
     private void updateAmount() {
         Order o = (Order) orderBox.getSelectedItem();
-        amount.setText(o == null ? "No unpaid orders" : Formats.peso(o.getTotal()));
-        gcashAmount.setText(o == null ? "" : "Amount: " + Formats.peso(o.getTotal()));
-        pendingNote.setText(o != null && o.getPaymentStatus() == PaymentStatus.PENDING
-                ? "A payment is awaiting staff confirmation. Submitting again will replace it." : " ");
+        amount.setText(o == null ? "No unpaid orders" : Formats.peso(o.getAvailableAmount()));
+        gcashAmount.setText(o == null ? "" : "Amount: " + Formats.peso(o.getAvailableAmount()));
+        pendingNote.setText(o != null && o.getPendingAmount().signum() > 0
+                ? "A payment is awaiting verification. Only the unreserved balance can be submitted." : " ");
     }
 
     private void submit() {
         Order o = (Order) orderBox.getSelectedItem();
         if (o == null) { Dialogs.info(this, "You have no unpaid orders."); return; }
+        String entered = JOptionPane.showInputDialog(this, "Payment amount (available: " + Formats.peso(o.getAvailableAmount()) + ")", o.getAvailableAmount().toPlainString());
+        if (entered == null) return;
+        final java.math.BigDecimal paymentAmount;
+        try { paymentAmount = new java.math.BigDecimal(entered.trim()); }
+        catch (NumberFormatException ex) { Dialogs.info(this, "Enter a valid payment amount."); return; }
         final Payment[] p = new Payment[1];
-        if (Dialogs.run(this, () -> p[0] = payments.submit(o.getId(), method, reference.getText(), user))) {
+        if (Dialogs.run(this, () -> p[0] = payments.submit(o.getId(), method, reference.getText(), paymentAmount, user))) {
             reference.setText("");
             String msg = method == PaymentMethod.GCASH
                     ? "Thank you! Your GCash payment was submitted and will be verified by our staff shortly."
-                    : "Noted! Please pay " + Formats.peso(o.getTotal()) + " " + (method == PaymentMethod.CASH
+                    : "Noted! Please pay " + Formats.peso(paymentAmount) + " " + (method == PaymentMethod.CASH
                     ? "in cash upon delivery / pickup." : "by card at our counter.");
             Dialogs.info(this, msg);
             new ReceiptDialog(SwingUtilities.getWindowAncestor(this), orders.find(o.getId()), p[0]).setVisible(true);

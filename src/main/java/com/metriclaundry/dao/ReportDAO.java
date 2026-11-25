@@ -26,7 +26,7 @@ public class ReportDAO {
                 + "(SELECT COUNT(*) FROM orders WHERE status IN ('RECEIVED','WASHING','DRYING')) AS in_process, "
                 + "(SELECT COUNT(*) FROM orders WHERE status = 'READY') AS ready, "
                 + "(SELECT COUNT(*) FROM orders WHERE status = 'COMPLETED' AND DATE(updated_at) = CURDATE()) AS completed_today, "
-                + "(SELECT COUNT(*) FROM payments WHERE status = 'PENDING') AS unpaid";
+                + "(SELECT COUNT(*) FROM orders o WHERE o.status <> 'CANCELLED' AND o.total > (SELECT COALESCE(SUM(p.amount),0) FROM payments p WHERE p.order_id=o.id AND p.status='PAID')) AS unpaid";
         try (Connection c = Database.getConnection(); PreparedStatement ps = c.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             rs.next();
@@ -62,11 +62,11 @@ public class ReportDAO {
     /** Rows: service, orders, quantity, sales \u2014 for orders created between from and to (inclusive). */
     public List<Object[]> salesByService(LocalDate from, LocalDate to) {
         String sql = "SELECT s.name, s.unit, COUNT(o.id) cnt, COALESCE(SUM(o.quantity),0) qty, "
-                   + "COALESCE(SUM(CASE WHEN p.status='PAID' THEN p.amount ELSE 0 END),0) sales "
+                   + "COALESCE(SUM(p.paid),0) sales "
                    + "FROM services s "
                    + "LEFT JOIN orders o ON o.service_id = s.id AND o.status <> 'CANCELLED' "
                    + "  AND o.created_at >= ? AND o.created_at < ? "
-                   + "LEFT JOIN payments p ON p.order_id = o.id "
+                   + "LEFT JOIN (SELECT order_id, SUM(amount) paid FROM payments WHERE status='PAID' GROUP BY order_id) p ON p.order_id = o.id "
                    + "GROUP BY s.id, s.name, s.unit ORDER BY sales DESC";
         try (Connection c = Database.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setDate(1, Date.valueOf(from));

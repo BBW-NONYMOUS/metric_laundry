@@ -22,7 +22,7 @@ public class StaffHomePage extends Page {
     private final User user;
     private final OrderService orders = new OrderService();
 
-    private final DefaultTableModel model = Tables.model("Order No.", "Customer", "Service", "Quantity", "Status",
+    private final DefaultTableModel model = Tables.model("Order No.", "Customer", "Service", "Per kg", "Status",
             "Payment", "Due", "Action");
 
     private List<Order> rows = new ArrayList<>();

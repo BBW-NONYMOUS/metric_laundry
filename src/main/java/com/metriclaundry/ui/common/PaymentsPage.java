@@ -31,13 +31,16 @@ public class PaymentsPage extends Page {
         bar.search(search, this::refresh);
         status.addActionListener(e -> refresh());
         bar.left(status);
-        bar.right(receipt).right(confirm);
+        AppButton history = AppButton.outline("Transactions", "receipt");
+        history.addActionListener(e -> { Payment p = selected(); if (p != null)
+            new TransactionHistoryDialog(SwingUtilities.getWindowAncestor(this), p.getOrderId(), actor, this::refresh).setVisible(true); });
+        bar.right(history).right(receipt).right(confirm);
         Tables.badgeColumn(table, 6);
         Tables.widths(table, 130, 130, 150, 130, 90, 110, 90, 110, 120);
         confirm.addActionListener(e -> {
             Payment p = selected();
             if (p == null) return;
-            if (p.getStatus() == PaymentStatus.PAID) { Dialogs.info(this, "This payment is already confirmed."); return; }
+            if (p.getStatus() != PaymentStatus.PENDING) { Dialogs.info(this, "Only pending payments can be confirmed."); return; }
             String what = p.getMethod().label() + " " + Formats.peso(p.getAmount())
                     + (p.getReferenceNo() != null ? "\nGCash Ref: " + p.getReferenceNo() + "\n\nCheck that this reference appears in the shop's GCash app." : "");
             if (Dialogs.confirm(this, "Confirm payment for " + p.getOrderNo() + "?\n\n" + what)
@@ -74,7 +77,7 @@ public class PaymentsPage extends Page {
     @SuppressWarnings("unchecked")
     private void initComponents() {//GEN-BEGIN:initComponents
         table = Tables.table(model);
-        status = new JComboBox<>(new Object[]{"All payments", PaymentStatus.PENDING, PaymentStatus.PAID});
+        status = new JComboBox<>(new Object[]{"All payments", PaymentStatus.PENDING, PaymentStatus.PAID, PaymentStatus.VOID});
         search = new InputField("Search receipt, order, customer, reference", "search", false);
         bar = new Toolbar();
         receipt = AppButton.outline("View Receipt", "receipt");

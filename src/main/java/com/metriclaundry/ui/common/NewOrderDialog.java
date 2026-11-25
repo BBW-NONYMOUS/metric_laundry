@@ -132,7 +132,7 @@ public class NewOrderDialog extends JDialog {
         view3.setText("Service");
         view3.setFont(Theme.font(Font.PLAIN, 13));
         view3.setForeground(Theme.MUTED);
-        view4.setText("Quantity (kg / pcs)");
+        view4.setText("Per kg / pcs");
         view4.setFont(Theme.font(Font.PLAIN, 13));
         view4.setForeground(Theme.MUTED);
         view5.setText("Notes");

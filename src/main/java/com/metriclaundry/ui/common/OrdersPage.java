@@ -20,8 +20,8 @@ import java.util.List;
 public class OrdersPage extends Page {
     private final OrderService service = new OrderService();
     private final User actor;
-    private final DefaultTableModel model = Tables.model("Order No.", "Customer", "Service", "Quantity", "Total",
-            "Status", "Payment", "Date", "Action");
+    private final DefaultTableModel model = Tables.model("Order No.", "Customer", "Service", "Per kg", "Total",
+            "Status", "Payment", "Paid", "Balance", "Date", "Action");
 
     private List<Order> rows = new ArrayList<>();
 
@@ -35,11 +35,17 @@ public class OrdersPage extends Page {
         activeOnly.addActionListener(e -> refresh());
         bar.search(search, this::refresh);
         bar.left(status).left(activeOnly);
-        bar.right(advance).right(add);
+        AppButton history = AppButton.outline("Transactions / Print", "print");
+        history.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row < 0) { Dialogs.info(this, "Select an order first."); return; }
+            new TransactionHistoryDialog(SwingUtilities.getWindowAncestor(this), rows.get(table.convertRowIndexToModel(row)).getId(), actor, this::refresh).setVisible(true);
+        });
+        bar.right(history).right(advance).right(add);
         Tables.badgeColumn(table, 5);
         Tables.badgeColumn(table, 6);
-        Tables.widths(table, 150, 160, 110, 80, 90, 110, 90, 110, 80);
-        ButtonColumn.install(table, 8, "Open", r -> open(rows.get(r)));
+        Tables.widths(table, 150, 150, 100, 70, 85, 100, 135, 85, 85, 100, 70);
+        ButtonColumn.install(table, 10, "Open", r -> open(rows.get(r)));
         table.addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2 && table.getSelectedRow() >= 0)
@@ -80,7 +86,7 @@ public class OrdersPage extends Page {
             model.setRowCount(0);
             for (Order o : list) {
                 model.addRow(new Object[]{o.getOrderNo(), o.getCustomerName(), o.getServiceName(), o.quantityLabel(),
-                        Formats.peso(o.getTotal()), o.getStatus(), o.getPaymentStatus(), Formats.date(o.getCreatedAt()), ""});
+                        Formats.peso(o.getTotal()), o.getStatus(), o.getPaymentStatus(), Formats.peso(o.getPaidAmount()), Formats.peso(o.getBalance()), Formats.date(o.getCreatedAt()), ""});
             }
         });
     }

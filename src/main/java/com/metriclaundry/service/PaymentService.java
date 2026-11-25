@@ -7,19 +7,21 @@ import com.metriclaundry.util.AppException;
 
 import java.util.List;
 
-/**
- * Payment rules:
- *  - one payment per order; amount always equals the order total (no tampering from the UI)
- *  - GCash needs a 13-digit-or-less reference number; staff verifies it -> PAID
- *  - Cash / Card are PENDING until staff receives the money at the counter
- *  - Staff recording a payment at the counter marks it PAID immediately
- *  - Card numbers are never captured (card is tapped on the shop's POS terminal)
- */
+/** Records installments; customer submissions require staff verification. */
 public class PaymentService {
     private final PaymentDAO payments = new PaymentDAO();
     private final OrderDAO orders = new OrderDAO();
 
     public Payment submit(int orderId, PaymentMethod method, String referenceNo, User actor) {
+        Order o = orders.findById(orderId);
+        if (o == null) throw new AppException("Order not found.");
+        return submit(orderId, method, referenceNo, o.getAvailableAmount(), actor);
+    }
+
+    public Payment submit(int orderId, PaymentMethod method, String referenceNo, java.math.BigDecimal amount, User actor) {
+        if (actor == null) throw new AppException("Please sign in.");
+        if (amount == null || amount.signum() <= 0 || amount.stripTrailingZeros().scale() > 2)
+            throw new AppException("Enter a positive payment amount with at most two decimal places.");
         Order o = orders.findById(orderId);
         if (o == null) throw new AppException("Order not found.");
         if (o.getStatus() == OrderStatus.CANCELLED) throw new AppException("Order is cancelled.");
@@ -32,18 +34,19 @@ public class PaymentService {
         if (method == PaymentMethod.GCASH && !ref.matches("\\d{6,13}"))
             throw new AppException("Enter the GCash reference number (6-13 digits) from your GCash receipt.");
 
-        boolean staffAtCounter = actor.getRole() != Role.CUSTOMER;
-        PaymentStatus status = staffAtCounter ? PaymentStatus.PAID : PaymentStatus.PENDING;
-        String receiptNo = "RC-" + o.getOrderNo().substring(3);
-        payments.upsert(orderId, receiptNo, method, o.getTotal(), ref.isEmpty() ? null : ref, status,
-                staffAtCounter ? actor.getId() : null);
-        return payments.findByOrder(orderId);
+        return payments.insert(orderId, method, amount, ref.isEmpty() ? null : ref, actor);
     }
 
     public void confirm(int paymentId, User actor) {
         if (actor.getRole() == Role.CUSTOMER) throw new AppException("Only staff can confirm payments.");
-        payments.markPaid(paymentId, actor.getId());
+        payments.resolve(paymentId, actor.getId(), true);
     }
+
+    public void voidPending(int paymentId, User actor) {
+        if (actor.getRole() == Role.CUSTOMER) throw new AppException("Only staff can void pending payments.");
+        payments.resolve(paymentId, actor.getId(), false);
+    }
+    public List<Payment> history(int orderId) { return payments.history(orderId); }
 
     public Payment findByOrder(int orderId) { return payments.findByOrder(orderId); }
 

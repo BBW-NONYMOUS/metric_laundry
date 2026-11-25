@@ -88,11 +88,11 @@ CREATE TABLE order_status_history (
 CREATE TABLE payments (
     id            INT AUTO_INCREMENT PRIMARY KEY,
     receipt_no    VARCHAR(20) NOT NULL UNIQUE,
-    order_id      INT NOT NULL UNIQUE,
+    order_id      INT NOT NULL,
     method        ENUM('GCASH','CASH','CARD') NOT NULL,
     amount        DECIMAL(10,2) NOT NULL,
     reference_no  VARCHAR(50),
-    status        ENUM('PENDING','PAID') NOT NULL DEFAULT 'PENDING',
+    status        ENUM('PENDING','PAID','VOID') NOT NULL DEFAULT 'PENDING',
     received_by   INT,
     created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     paid_at       DATETIME,

@@ -181,7 +181,7 @@ public class TrackOrderPage extends Page {
         view5.setForeground(Theme.TEXT);
         view6.setOpaque(false);
         view6.setLayout(new GridLayout(1, 2));
-        view7.setText("Quantity");
+        view7.setText("Per kg");
         view7.setFont(Theme.font(Font.BOLD, 16));
         view7.setForeground(Theme.TEXT);
         view8.setOpaque(false);

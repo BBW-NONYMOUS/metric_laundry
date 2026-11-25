@@ -18,6 +18,14 @@ public class Order {
     private String notes;
     private LocalDateTime estimatedCompletion;
     private LocalDateTime createdAt;
+    private BigDecimal paidAmount = BigDecimal.ZERO;
+    private BigDecimal pendingAmount = BigDecimal.ZERO;
+    public BigDecimal getPaidAmount() { return paidAmount; }
+    public void setPaidAmount(BigDecimal value) { paidAmount = value; }
+    public BigDecimal getPendingAmount() { return pendingAmount; }
+    public void setPendingAmount(BigDecimal value) { pendingAmount = value; }
+    public BigDecimal getBalance() { return total.subtract(paidAmount).max(BigDecimal.ZERO); }
+    public BigDecimal getAvailableAmount() { return getBalance().subtract(pendingAmount).max(BigDecimal.ZERO); }
     private PaymentStatus paymentStatus;     // null = no payment yet
 
     public int getId() { return id; }
@@ -48,10 +56,10 @@ public class Order {
     public void setEstimatedCompletion(LocalDateTime estimatedCompletion) { this.estimatedCompletion = estimatedCompletion; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public PaymentStatus getPaymentStatus() { return paymentStatus; }
+    public PaymentStatus getPaymentStatus() { return paidAmount.compareTo(total) >= 0 ? PaymentStatus.PAID : paidAmount.signum() > 0 ? PaymentStatus.PARTIAL : pendingAmount.signum() > 0 ? PaymentStatus.PENDING : PaymentStatus.UNPAID; }
     public void setPaymentStatus(PaymentStatus paymentStatus) { this.paymentStatus = paymentStatus; }
 
-    public boolean isPaid() { return paymentStatus == PaymentStatus.PAID; }
+    public boolean isPaid() { return getPaymentStatus() == PaymentStatus.PAID; }
 
     /** e.g. "2 kg" or "5 pcs". */
     public String quantityLabel() {

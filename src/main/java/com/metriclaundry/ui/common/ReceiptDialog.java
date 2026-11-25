@@ -71,7 +71,7 @@ public class ReceiptDialog extends JDialog {
             r.add(kv(row[0], row[1]), c);
         }
         c.gridy = y++; c.insets = new Insets(12, 0, 0, 0);
-        r.add(lineRow(Theme.bold(12.5f), "Service", "Qty", "Price", "Total", new Color(0xF1F6F1)), c);
+        r.add(lineRow(Theme.bold(12.5f), "Service", "Per kg", "Price", "Total", new Color(0xF1F6F1)), c);
         c.gridy = y++; c.insets = new Insets(0, 0, 0, 0);
         r.add(lineRow(Theme.regular(12.5f), o.getServiceName(), o.quantityLabel(),
                 Formats.peso(o.getUnitPrice()), Formats.peso(o.getTotal()), Color.WHITE), c);
@@ -81,10 +81,15 @@ public class ReceiptDialog extends JDialog {
 
         JPanel total = new JPanel(new BorderLayout());
         total.setOpaque(false);
-        total.add(Theme.label("Total Amount:", Font.BOLD, 14, Theme.TEXT), BorderLayout.WEST);
+        total.add(Theme.label("This transaction:", Font.BOLD, 14, Theme.TEXT), BorderLayout.WEST);
         total.add(Theme.label(Formats.peso(p.getAmount()), Font.BOLD, 18, Theme.PRIMARY_DARK), BorderLayout.EAST);
         c.gridy = y++; c.insets = new Insets(0, 0, 10, 0); r.add(total, c);
 
+        c.gridy = y++; r.add(kv("Order total", Formats.peso(o.getTotal())), c);
+        c.gridy = y++; r.add(kv("Confirmed paid to date", Formats.peso(o.getPaidAmount())), c);
+        c.gridy = y++; r.add(kv("Balance due", Formats.peso(o.getBalance())), c);
+        c.gridy = y++; r.add(kv("Awaiting verification", Formats.peso(o.getPendingAmount())), c);
+        c.gridy = y++; r.add(kv("Order payment status", o.getPaymentStatus().label()), c);
         boolean paid = p.getStatus() == PaymentStatus.PAID;
         JLabel status = Theme.label("Payment Status: " + p.getStatus().label(), Font.BOLD, 13,
                 paid ? Theme.OK_FG : Theme.WARN_FG);
@@ -92,7 +97,7 @@ public class ReceiptDialog extends JDialog {
         status.setHorizontalAlignment(SwingConstants.CENTER);
         c.gridy = y++; r.add(status, c);
         if (!paid) {
-            JLabel note = Theme.label("Not yet paid - please settle at the counter upon pickup.", Font.PLAIN, 11.5f, Theme.MUTED);
+            JLabel note = Theme.label("This transaction does not count as a confirmed payment.", Font.PLAIN, 11.5f, Theme.MUTED);
             note.setHorizontalAlignment(SwingConstants.CENTER);
             c.gridy = y; r.add(note, c);
         }
@@ -150,7 +155,7 @@ public class ReceiptDialog extends JDialog {
             if (page > 0) return Printable.NO_SUCH_PAGE;
             Graphics2D g2 = (Graphics2D) g;
             g2.translate(pf.getImageableX(), pf.getImageableY());
-            double s = Math.min(1.0, pf.getImageableWidth() / receipt.getWidth());
+            double s = Math.min(1.0, Math.min(pf.getImageableWidth() / receipt.getWidth(), pf.getImageableHeight() / receipt.getHeight()));
             g2.scale(s, s);
             receipt.printAll(g2);
             return Printable.PAGE_EXISTS;

@@ -50,6 +50,12 @@ public final class Database {
     public static void testConnection() throws SQLException {
         try (Connection c = getConnection()) {
             if (!c.isValid(3)) throw new SQLException("Database connection is not valid.");
+            try (var indexes = c.getMetaData().getIndexInfo(c.getCatalog(), null, "payments", true, false)) {
+                while (indexes.next()) {
+                    if ("order_id".equalsIgnoreCase(indexes.getString("COLUMN_NAME")))
+                        throw new SQLException("Installment payments require database/migrate_partial_payments.sql. Back up the database and run this migration once.");
+                }
+            }
             // A successful connection alone cannot detect an older incompatible schema.
             for (String query : new String[]{
                     "SELECT id, username, password_hash, salt, role, active FROM users WHERE 1=0",

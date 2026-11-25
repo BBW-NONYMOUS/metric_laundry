@@ -1,7 +1,7 @@
 package com.metriclaundry.model;
 
 public enum PaymentStatus {
-    PENDING("Pending"), PAID("Paid");
+    UNPAID("Unpaid"), PARTIAL("Partially paid"), PENDING("Pending verification"), PAID("Paid"), VOID("Voided");
 
     private final String label;
     PaymentStatus(String label) { this.label = label; }

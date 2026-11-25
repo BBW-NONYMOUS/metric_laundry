@@ -40,7 +40,7 @@ public class OrderDetailsDialog extends JDialog {
         tracker.setStatus(formOrder.getStatus());
         revalidate();
         repaint();
-        setSize(860, 640);
+        setSize(1120, 740);
         setLocationRelativeTo(owner);
     }
 
@@ -59,10 +59,12 @@ public class OrderDetailsDialog extends JDialog {
         RoundedPanel info = new RoundedPanel(new GridLayout(0, 4, 12, 8));
         String[][] rows = {
                 {"Customer", o.getCustomerName()}, {"Service", o.getServiceName()},
-                {"Quantity", o.quantityLabel()}, {"Unit Price", Formats.peso(o.getUnitPrice())},
+                {"Per kg", o.quantityLabel()}, {"Unit Price", Formats.peso(o.getUnitPrice())},
                 {"Total", Formats.peso(o.getTotal())}, {"Placed", Formats.dateTime(o.getCreatedAt())},
                 {"Est. Completion", Formats.friendly(o.getEstimatedCompletion())},
-                {"Payment", p == null ? "Not yet paid" : p.getMethod().label() + " - " + p.getStatus().label()},
+                {"Payment", o.getPaymentStatus().label()},
+                {"Confirmed paid", Formats.peso(o.getPaidAmount())}, {"Balance due", Formats.peso(o.getBalance())},
+                {"Pending verification", Formats.peso(o.getPendingAmount())},
                 {"Notes", o.getNotes() == null ? "-" : o.getNotes()}, {"", ""}};
         for (String[] r : rows) {
             info.add(Theme.label(r[0], Font.PLAIN, 12.5f, Theme.MUTED));
@@ -76,6 +78,9 @@ public class OrderDetailsDialog extends JDialog {
         bar.setOpaque(false);
         boolean staff = actor.getRole() != Role.CUSTOMER;
 
+        AppButton history = AppButton.outline("Transactions / Print", "print");
+        history.addActionListener(e -> new TransactionHistoryDialog(this, orderId, actor, () -> { onChange.run(); reload(); }).setVisible(true));
+        bar.add(history);
         if (p != null) {
             AppButton receipt = AppButton.outline("View Receipt", "receipt");
             receipt.addActionListener(e -> new ReceiptDialog(this, o, payments.findByOrder(orderId)).setVisible(true));
@@ -83,14 +88,18 @@ public class OrderDetailsDialog extends JDialog {
         }
         if (staff && p != null && p.getStatus() == PaymentStatus.PENDING) {
             AppButton confirm = new AppButton("Confirm Payment", "check", AppButton.Variant.BLUE);
-            confirm.addActionListener(e -> act(() -> payments.confirm(p.getId(), actor), "Payment confirmed."));
+            confirm.addActionListener(e -> {
+                if (Dialogs.confirm(this, "Confirm receipt of " + Formats.peso(p.getAmount()) + " via " + p.getMethod()
+                        + "?\nReference: " + p.getReferenceNo()))
+                    act(() -> payments.confirm(p.getId(), actor), "Payment confirmed.");
+            });
             bar.add(confirm);
         }
-        if (staff && p == null && o.getStatus() != OrderStatus.CANCELLED) {
+        if (staff && o.getAvailableAmount().signum() > 0 && o.getStatus() != OrderStatus.CANCELLED) {
             AppButton record = new AppButton("Record Payment", "cash", AppButton.Variant.BLUE);
             record.addActionListener(e -> {
                 PaymentPrompt.Result r = PaymentPrompt.ask(this, o);
-                if (r != null) act(() -> payments.submit(orderId, r.method, r.reference, actor), "Payment recorded.");
+                if (r != null) act(() -> payments.submit(orderId, r.method, r.reference, r.amount, actor), "Payment recorded.");
             });
             bar.add(record);
         }
@@ -108,7 +117,7 @@ public class OrderDetailsDialog extends JDialog {
             });
             bar.add(override);
         }
-        boolean canCancel = o.getStatus().isActive() && !o.isPaid()
+        boolean canCancel = o.getStatus().isActive() && o.getPaidAmount().signum() == 0 && o.getPendingAmount().signum() == 0
                 && (staff || o.getStatus() == OrderStatus.PLACED);
         if (canCancel) {
             AppButton cancel = AppButton.danger("Cancel Order", "close");
@@ -143,6 +152,7 @@ public class OrderDetailsDialog extends JDialog {
         public static final class Result {
             public final PaymentMethod method;
             public final String reference;
+            public java.math.BigDecimal amount;
             Result(PaymentMethod method, String reference) { this.method = method; this.reference = reference; }
         }
 
@@ -152,11 +162,16 @@ public class OrderDetailsDialog extends JDialog {
             JComboBox<PaymentMethod> m = new JComboBox<>(PaymentMethod.values());
             m.setSelectedItem(PaymentMethod.CASH);
             JTextField ref = new JTextField();
-            Object[] form = {"Order " + o.getOrderNo() + "  -  Amount due: " + Formats.peso(o.getTotal()), " ",
+            JTextField amount = new JTextField(o.getAvailableAmount().toPlainString());
+            Object[] form = {"Amount received:", amount, "Order " + o.getOrderNo() + "  -  Amount due: " + Formats.peso(o.getBalance()), " ",
                     "Payment method:", m, "GCash reference no. (GCash only):", ref};
             if (JOptionPane.showConfirmDialog(parent, form, "Record Payment", JOptionPane.OK_CANCEL_OPTION)
                     != JOptionPane.OK_OPTION) return null;
-            return new Result((PaymentMethod) m.getSelectedItem(), ref.getText());
+            try {
+                Result result = new Result((PaymentMethod) m.getSelectedItem(), ref.getText());
+                result.amount = new java.math.BigDecimal(amount.getText().trim());
+                return result;
+            } catch (NumberFormatException ex) { Dialogs.info(parent, "Enter a valid payment amount."); return null; }
         }
     }
 

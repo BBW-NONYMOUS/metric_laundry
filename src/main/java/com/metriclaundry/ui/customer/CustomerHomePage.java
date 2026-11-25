@@ -22,7 +22,7 @@ public class CustomerHomePage extends Page {
     private final User user;
     private final OrderService orders = new OrderService();
 
-    private final DefaultTableModel recent = Tables.model("Order No.", "Service", "Quantity", "Total", "Status", "Date");
+    private final DefaultTableModel recent = Tables.model("Order No.", "Service", "Per kg", "Total", "Status", "Date");
 
     private List<Order> recentRows = List.of();
 

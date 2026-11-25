@@ -14,7 +14,7 @@
   <NonVisualComponents>
     <Component class="javax.swing.JComboBox" name="status">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JComboBox&lt;&gt;(new Object[]{&quot;All payments&quot;, PaymentStatus.PENDING, PaymentStatus.PAID})" />
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JComboBox&lt;&gt;(new Object[]{&quot;All payments&quot;, PaymentStatus.PENDING, PaymentStatus.PAID, PaymentStatus.VOID})" />
         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;Object&gt;" />
       </AuxValues>
       <Properties>
