@@ -60,6 +60,7 @@ public class OrderDetailsDialog extends JDialog {
         String[][] rows = {
                 {"Customer", o.getCustomerName()}, {"Service", o.getServiceName()},
                 {"Per kg", o.quantityLabel()}, {"Unit Price", Formats.peso(o.getUnitPrice())},
+                {"Laundry subtotal", Formats.peso(o.getServiceSubtotal())}, {"Extras subtotal", Formats.peso(o.getAddOnTotal())},
                 {"Total", Formats.peso(o.getTotal())}, {"Placed", Formats.dateTime(o.getCreatedAt())},
                 {"Est. Completion", Formats.friendly(o.getEstimatedCompletion())},
                 {"Payment", o.getPaymentStatus().label()},

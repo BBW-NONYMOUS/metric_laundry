@@ -30,7 +30,9 @@ public class ServicesPage extends Page {
 
         initComponents();
         bar.left(hint);
-        bar.right(add);
+        AppButton extras = AppButton.outline("Add-ons / Prices", "plus");
+        extras.addActionListener(e -> Dialogs.run(this, () -> new AddOnCatalogDialog(SwingUtilities.getWindowAncestor(this), com.metriclaundry.util.Session.get()).setVisible(true)));
+        bar.right(extras).right(add);
         table.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
             @Override public Component getTableCellRendererComponent(JTable t, Object v, boolean s, boolean f, int r, int c) {
                 JLabel l = (JLabel) super.getTableCellRendererComponent(t, v, s, false, r, c);

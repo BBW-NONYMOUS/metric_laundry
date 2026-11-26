@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 
 /** Staff/Admin: create a walk-in order at the counter, optionally collecting payment right away. */
 public class NewOrderDialog extends JDialog {
+    private java.util.List<AddOnLine> extras = java.util.List.of();
     private final OrderService orders = new OrderService();
 
     private Window owner;
@@ -35,7 +36,7 @@ public class NewOrderDialog extends JDialog {
             LaundryService s = (LaundryService) service.getSelectedItem();
             if (s == null) return;
             BigDecimal q = BigDecimal.valueOf((Double) qty.getValue());
-            total.setText(Formats.peso(orders.computeTotal(s, q)) + "  (" + Formats.peso(s.getPrice()) + " / " + s.unitLabel() + ")");
+            total.setText(Formats.peso(orders.computeTotal(s, q).add(AddOnSelector.total(extras))) + "  (" + Formats.peso(s.getPrice()) + " / " + s.unitLabel() + ")");
             boolean on = payNow.isSelected();
             method.setEnabled(on);
             ref.setEnabled(on && method.getSelectedItem() == PaymentMethod.GCASH);
@@ -44,6 +45,20 @@ public class NewOrderDialog extends JDialog {
         qty.addChangeListener(e -> recalc.run());
         payNow.addActionListener(e -> recalc.run());
         method.addActionListener(e -> recalc.run());
+        JPanel extrasBar = new JPanel(new BorderLayout(8, 0));
+        JLabel extrasValue = new JLabel("Extras: " + Formats.peso(BigDecimal.ZERO));
+        JButton extrasButton = new JButton("Add-ons / View prices");
+        extrasButton.addActionListener(e -> {
+            var chosen = AddOnSelector.ask(this, extras);
+            if (chosen != null) {
+                extras = chosen;
+                extrasValue.setText("Extras: " + Formats.peso(AddOnSelector.total(extras)));
+                extrasValue.setToolTipText(AddOnSelector.description(extras));
+                recalc.run();
+            }
+        });
+        extrasBar.add(extrasButton, BorderLayout.WEST); extrasBar.add(extrasValue);
+        getContentPane().add(extrasBar, BorderLayout.SOUTH);
         recalc.run();
         addCustomer.addActionListener(e -> {
             UserFormDialog d = new UserFormDialog(this, null, Role.CUSTOMER, false);
@@ -57,7 +72,7 @@ public class NewOrderDialog extends JDialog {
             final Order[] created = new Order[1];
             boolean ok = Dialogs.run(this, () -> {
                 created[0] = orders.placeOrder(cu.getId(), s.getId(), BigDecimal.valueOf((Double) qty.getValue()),
-                        notes.getText(), actor);
+                        notes.getText(), actor, extras);
                 if (payNow.isSelected())
                     new PaymentService().submit(created[0].getId(), (PaymentMethod) method.getSelectedItem(), ref.getText(), actor);
             });

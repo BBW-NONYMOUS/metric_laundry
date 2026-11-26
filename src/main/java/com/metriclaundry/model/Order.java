@@ -4,6 +4,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class Order {
+    private java.util.List<AddOnLine> addOns = java.util.List.of();
+    public java.util.List<AddOnLine> getAddOns() { return addOns; }
+    public void setAddOns(java.util.List<AddOnLine> lines) { addOns = java.util.List.copyOf(lines); }
+    public BigDecimal getAddOnTotal() { return addOns.stream().map(AddOnLine::total).reduce(BigDecimal.ZERO, BigDecimal::add); }
+    public BigDecimal getServiceSubtotal() { return quantity.multiply(unitPrice).setScale(2, java.math.RoundingMode.HALF_UP); }
     private int id;
     private String orderNo;
     private int customerId;

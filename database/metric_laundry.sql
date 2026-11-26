@@ -140,3 +140,27 @@ INSERT INTO payments (receipt_no, order_id, method, amount, reference_no, status
 ('RC-SAMPLE004', 4, 'CARD',  360.00, NULL,          'PAID', 2, NOW() - INTERVAL 3 DAY, NOW() - INTERVAL 3 DAY),
 ('RC-SAMPLE005', 5, 'GCASH', 450.00, '1009283999',  'PAID', 2, NOW() - INTERVAL 2 DAY, NOW() - INTERVAL 2 DAY),
 ('RC-SAMPLE007', 7, 'GCASH', 60.00,  '1009284100',  'PAID', 2, NOW() - INTERVAL 50 MINUTE, NOW() - INTERVAL 50 MINUTE);
+
+-- Optional extras; initial shop price PHP 20 per sachet, editable by admin.
+CREATE TABLE IF NOT EXISTS addons (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(100) NOT NULL UNIQUE,
+ unit VARCHAR(30) NOT NULL,
+ price DECIMAL(10,2) NULL,
+ active BOOLEAN NOT NULL DEFAULT FALSE
+) ENGINE=InnoDB;
+CREATE TABLE IF NOT EXISTS order_addons (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ order_id INT NOT NULL,
+ addon_id INT NOT NULL,
+ name VARCHAR(100) NOT NULL,
+ unit VARCHAR(30) NOT NULL,
+ quantity DECIMAL(10,2) NOT NULL,
+ unit_price DECIMAL(10,2) NOT NULL,
+ CONSTRAINT fk_addon_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+ CONSTRAINT fk_addon_catalog FOREIGN KEY (addon_id) REFERENCES addons(id),
+ UNIQUE KEY order_addon (order_id,addon_id)
+) ENGINE=InnoDB;
+INSERT IGNORE INTO addons (name,unit,price,active) VALUES
+ ('Detergent powder','sachet',20.00,TRUE),
+ ('Fabric softener','sachet',20.00,TRUE);

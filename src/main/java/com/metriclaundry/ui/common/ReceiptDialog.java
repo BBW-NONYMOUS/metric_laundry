@@ -74,7 +74,12 @@ public class ReceiptDialog extends JDialog {
         r.add(lineRow(Theme.bold(12.5f), "Service", "Per kg", "Price", "Total", new Color(0xF1F6F1)), c);
         c.gridy = y++; c.insets = new Insets(0, 0, 0, 0);
         r.add(lineRow(Theme.regular(12.5f), o.getServiceName(), o.quantityLabel(),
-                Formats.peso(o.getUnitPrice()), Formats.peso(o.getTotal()), Color.WHITE), c);
+                Formats.peso(o.getUnitPrice()), Formats.peso(o.getServiceSubtotal()), Color.WHITE), c);
+        for (var extra : o.getAddOns()) {
+            c.gridy = y++;
+            r.add(lineRow(Theme.regular(11), extra.name(), extra.quantity().stripTrailingZeros().toPlainString() + " " + extra.unit(),
+                    Formats.peso(extra.unitPrice()), Formats.peso(extra.total()), Color.WHITE), c);
+        }
         JSeparator sep = new JSeparator();
         sep.setForeground(Theme.BORDER);
         c.gridy = y++; c.insets = new Insets(6, 0, 6, 0); r.add(sep, c);
@@ -101,7 +106,7 @@ public class ReceiptDialog extends JDialog {
             note.setHorizontalAlignment(SwingConstants.CENTER);
             c.gridy = y; r.add(note, c);
         }
-        r.setPreferredSize(new Dimension(430, r.getPreferredSize().height));
+        r.setPreferredSize(new Dimension(600, r.getPreferredSize().height));
         return r;
     }
 

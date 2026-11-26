@@ -28,6 +28,10 @@ public class OrderService {
     }
 
     public Order placeOrder(int customerId, int serviceId, BigDecimal qty, String notes, User actor) {
+        return placeOrder(customerId, serviceId, qty, notes, actor, java.util.List.of());
+    }
+
+    public Order placeOrder(int customerId, int serviceId, BigDecimal qty, String notes, User actor, java.util.List<AddOnLine> extras) {
         LaundryService s = services.findById(serviceId);
         if (s == null || !s.isActive()) throw new AppException("Selected service is not available.");
         if (qty == null || qty.compareTo(BigDecimal.ZERO) <= 0) throw new AppException("Quantity must be greater than zero.");
@@ -43,6 +47,7 @@ public class OrderService {
         o.setQuantity(qty);
         o.setUnitPrice(s.getPrice());
         o.setTotal(computeTotal(s, qty));
+        o.setAddOns(extras);
         o.setNotes(notes == null || notes.isBlank() ? null : notes.trim());
         o.setEstimatedCompletion(LocalDateTime.now().plusHours(s.getTurnaroundHours()));
         return orders.insert(o, actor.getId());

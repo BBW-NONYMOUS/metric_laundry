@@ -69,3 +69,13 @@ Existing desktop databases: back up first, then run `database/migrate_partial_pa
 - Receipts show the specific transaction amount and current order totals, paid amount, pending verification and balance. Historical receipts show the current cumulative balance at reprint time.
 
 Regression check: import the seed into a separate database named `metric_laundry_payment_test`, compile tests, then run `com.metriclaundry.PaymentIntegrationCheck` with `-Ddb.url=jdbc:mysql://localhost:3306/metric_laundry_payment_test` and the MySQL driver on the classpath. Never run this check against the working database.
+
+## Optional add-ons
+
+For an existing database, run `database/migrate_addons.sql` after backing up. This migration is repeatable and preserves existing orders.
+
+Admin: open **Manage Services ? Add-ons / Prices** to set the real price, charging unit (sachet, load, kg, etc.), and availability. Detergent powder and fabric softener start at PHP 20 per sachet, as requested. The charging unit is assumed to be a sachet and is editable. Add other extras using **Add extra**.
+
+Customer and walk-in order forms have **Add-ons / View prices**. Each row shows its price per unit, selected units, and added cost. Zero excludes an item; extras are optional. The total includes laundry plus selected extras. If catalog prices change before submission, saving stops and asks the user to review the new prices.
+
+Order details show the extras subtotal; **Transactions / Print** and receipts itemize the saved extras. Prices are preserved per order, so later catalog edits never change an existing bill. Existing payment, installment and balance checks include add-on charges. This feature records charges; it does not track supply inventory or decide how much detergent a load requires.

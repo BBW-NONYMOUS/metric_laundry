@@ -32,6 +32,8 @@ public class OrderDAO {
             try (Connection c = Database.getConnection()) {
                 c.setAutoCommit(false);
                 try {
+                    o.setAddOns(AddOnDAO.validate(c, o.getAddOns()));
+                    o.setTotal(o.getServiceSubtotal().add(o.getAddOnTotal()));
                     int seq;
                     try (PreparedStatement ps = c.prepareStatement(
                             "SELECT COUNT(*) FROM orders WHERE order_no LIKE ?")) {
@@ -57,12 +59,13 @@ public class OrderDAO {
                         ps.executeUpdate();
                         try (ResultSet rs = ps.getGeneratedKeys()) { rs.next(); id = rs.getInt(1); }
                     }
+                    AddOnDAO.insert(c, id, o.getAddOns());
                     insertHistory(c, id, OrderStatus.PLACED, createdBy, "Order placed");
                     c.commit();
                     return findById(id);
                 } catch (SQLIntegrityConstraintViolationException dup) {
                     c.rollback();               // order number collision -> retry with next number
-                } catch (SQLException e) {
+                } catch (SQLException | RuntimeException e) {
                     c.rollback();
                     throw e;
                 }
@@ -74,7 +77,10 @@ public class OrderDAO {
     public Order findById(int id) {
         try (Connection c = Database.getConnection(); PreparedStatement ps = c.prepareStatement(SELECT + "WHERE o.id = ?")) {
             ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) { return rs.next() ? map(rs) : null; }
+            try (ResultSet rs = ps.executeQuery()) { if (!rs.next()) return null;
+                Order order = map(rs);
+                order.setAddOns(AddOnDAO.history(c, id));
+                return order; }
         } catch (SQLException e) { throw new AppException("Database error: " + e.getMessage(), e); }
     }
 

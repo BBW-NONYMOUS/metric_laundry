@@ -56,6 +56,11 @@ public final class Database {
                         throw new SQLException("Installment payments require database/migrate_partial_payments.sql. Back up the database and run this migration once.");
                 }
             }
+            try (var ps=c.prepareStatement("SELECT a.id, a.name, a.unit, a.price, a.active, oa.quantity, oa.unit_price FROM addons a LEFT JOIN order_addons oa ON oa.addon_id=a.id WHERE 1=0"); var rs=ps.executeQuery()) {
+                // Existing orders are preserved by the add-on migration.
+            } catch (SQLException ex) {
+                throw new SQLException("Add-on pricing requires database/migrate_addons.sql. Back up and run this non-destructive migration once.", ex);
+            }
             // A successful connection alone cannot detect an older incompatible schema.
             for (String query : new String[]{
                     "SELECT id, username, password_hash, salt, role, active FROM users WHERE 1=0",

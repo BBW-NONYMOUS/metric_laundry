@@ -22,6 +22,8 @@ import java.util.List;
 
 /** Customer: choose a service, enter weight / pieces, see the live total and place the order. */
 public class PlaceOrderPage extends Page {
+    private java.util.List<com.metriclaundry.model.AddOnLine> extras = java.util.List.of();
+    private final JLabel extrasValue = new JLabel("Extras: " + Formats.peso(BigDecimal.ZERO));
     private final User user;
     private final OrderService orders = new OrderService();
 
@@ -34,6 +36,15 @@ public class PlaceOrderPage extends Page {
         super("Place Order", "Choose a service and tell us how much laundry you have");
         this.user = user;
         initComponents();
+        JPanel extrasBar = new JPanel(new BorderLayout(12, 4));
+        JButton extrasButton = new JButton("Add-ons / View prices");
+        extrasButton.addActionListener(e -> {
+            var chosen = com.metriclaundry.ui.common.AddOnSelector.ask(this, extras);
+            if (chosen != null) { extras = chosen; updateSummary(); }
+        });
+        extrasBar.add(extrasButton, BorderLayout.WEST);
+        extrasBar.add(extrasValue, BorderLayout.CENTER);
+        add(extrasBar, BorderLayout.SOUTH);
         qty.addChangeListener(e -> updateSummary());
         place.addActionListener(e -> placeOrder());
     }
@@ -44,10 +55,12 @@ public class PlaceOrderPage extends Page {
         if (selected == null) { Dialogs.info(this, "Please choose a service."); return; }
         BigDecimal q = BigDecimal.valueOf((Double) qty.getValue());
         if (!Dialogs.confirm(this, "Place this order?\n\n" + selected.getName() + "  -  " + q.stripTrailingZeros().toPlainString()
-                + " " + selected.unitLabel() + "\nTotal: " + Formats.peso(orders.computeTotal(selected, q)))) return;
+                + " " + selected.unitLabel() + "\n" + com.metriclaundry.ui.common.AddOnSelector.description(extras) + "\nTotal: " + Formats.peso(orders.computeTotal(selected, q).add(com.metriclaundry.ui.common.AddOnSelector.total(extras))))) return;
         final Order[] created = new Order[1];
-        if (Dialogs.run(this, () -> created[0] = orders.placeOrder(user.getId(), selected.getId(), q, notes.getText(), user))) {
+        if (Dialogs.run(this, () -> created[0] = orders.placeOrder(user.getId(), selected.getId(), q, notes.getText(), user, extras))) {
             notes.setText("");
+            extras = java.util.List.of();
+            updateSummary();
             int go = JOptionPane.showOptionDialog(this, "Order " + created[0].getOrderNo() + " has been placed!\n"
                             + "Bring your laundry to the shop or wait for our rider.\n\nWould you like to pay now?",
                     "Order Placed", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null,
@@ -83,11 +96,13 @@ public class PlaceOrderPage extends Page {
     private void updateSummary() {
         if (selected == null) return;
         BigDecimal q = BigDecimal.valueOf((Double) qty.getValue());
+        extrasValue.setText("Extras: " + Formats.peso(com.metriclaundry.ui.common.AddOnSelector.total(extras)));
+        extrasValue.setToolTipText(com.metriclaundry.ui.common.AddOnSelector.description(extras));
         sumService.setText(selected.getName());
         sumQty.setText(q.stripTrailingZeros().toPlainString() + " " + selected.unitLabel());
         sumPrice.setText(Formats.peso(selected.getPrice()) + " / " + selected.unitLabel());
         sumEta.setText(Formats.friendly(LocalDateTime.now().plusHours(selected.getTurnaroundHours())));
-        sumTotal.setText(Formats.peso(orders.computeTotal(selected, q)));
+        sumTotal.setText(Formats.peso(orders.computeTotal(selected, q).add(com.metriclaundry.ui.common.AddOnSelector.total(extras))));
     }
 
     @Override public void refresh() {

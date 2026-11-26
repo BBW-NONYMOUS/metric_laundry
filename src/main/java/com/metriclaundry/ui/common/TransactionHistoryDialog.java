@@ -76,6 +76,11 @@ public class TransactionHistoryDialog extends JDialog {
         text.append("Service: ").append(o.getServiceName()).append("    Per kg: ").append(o.quantityLabel()).append("\n");
         text.append("Unit price: ").append(Formats.peso(o.getUnitPrice())).append("    Placed: ").append(Formats.dateTime(o.getCreatedAt())).append("\n");
         text.append("Order status: ").append(o.getStatus()).append("    Payment: ").append(o.getPaymentStatus()).append("\n\n");
+        text.append("Laundry subtotal: ").append(Formats.peso(o.getServiceSubtotal())).append("\n");
+        text.append("ADD-ONS\n");
+        if(o.getAddOns().isEmpty()) text.append("None\n");
+        for(var extra:o.getAddOns()) text.append(extra.description()).append("\n");
+        text.append("Extras subtotal: ").append(Formats.peso(o.getAddOnTotal())).append("\n\n");
         text.append("Order total: ").append(Formats.peso(o.getTotal())).append("\nConfirmed paid: ").append(Formats.peso(o.getPaidAmount()));
         text.append("\nBalance due: ").append(Formats.peso(o.getBalance())).append("\nPending verification: ").append(Formats.peso(o.getPendingAmount()));
         text.append("\nPending and voided transactions do not reduce the balance.\n\nPAYMENT TRANSACTIONS\n");
